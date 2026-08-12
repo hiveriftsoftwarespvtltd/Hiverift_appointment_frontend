@@ -89,24 +89,16 @@ export const ConfirmationPage = () => {
 
           {/* Status Icon & Header */}
           <div className="flex flex-col items-center">
-            {isPending ? (
-              <div className="w-16 h-16 rounded-2xl bg-amber-50 text-amber-600 border border-amber-200 flex items-center justify-center mb-4 shadow-sm">
+            <div className="w-16 h-16 rounded-2xl bg-[#EAF3FF] text-[#2578FB] border border-[#BFD8FF] flex items-center justify-center mb-4 shadow-blue">
+              {isPending ? (
                 <Hourglass className="w-8 h-8 animate-pulse" />
-              </div>
-            ) : (
-              <div className="w-16 h-16 rounded-2xl bg-emerald-50 text-emerald-600 border border-emerald-200 flex items-center justify-center mb-4 shadow-sm">
-                <CheckCircle2 className="w-9 h-9" />
-              </div>
-            )}
+              ) : (
+                <CheckCircle2 className="w-8 h-8" />
+              )}
+            </div>
 
-            <span
-              className={`inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-xs font-extrabold uppercase tracking-wider mb-2 ${
-                isPending
-                  ? 'bg-amber-50 text-amber-700 border border-amber-300'
-                  : 'bg-emerald-50 text-emerald-700 border border-emerald-300'
-              }`}
-            >
-              <Sparkles className="w-3.5 h-3.5" />
+            <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-xs font-extrabold uppercase tracking-wider mb-2 bg-[#EAF3FF] text-[#2578FB] border border-[#BFD8FF] shadow-xs">
+              <Sparkles className="w-3.5 h-3.5 text-[#2578FB]" />
               {isPending ? 'Request Pending Approval' : 'Booking Confirmed'}
             </span>
 
