@@ -736,8 +736,10 @@ export const BookingPage = () => {
                               <h4 className="font-bold text-sm text-[#111827]">{type.title}</h4>
                               <p className="text-[11px] text-[#5B6472] truncate mt-0.5">
                                 {type.type === 'PHONE_CALL'
-                                  ? type.phoneNumber || 'Phone call'
-                                  : type.meetingLink || 'Virtual meeting'}
+                                  ? 'Direct voice call'
+                                  : type.type === 'GOOGLE_MEET'
+                                    ? 'Google Meet video meeting'
+                                    : 'Zoom video meeting'}
                               </p>
                             </div>
                           </div>
@@ -881,7 +883,7 @@ export const BookingPage = () => {
                             <input
                               type="text"
                               required
-                              placeholder="e.g. Vineet Kumar"
+                              placeholder="e.g. Enter Your Name"
                               value={customerName}
                               onChange={(e) => setCustomerName(e.target.value)}
                               className="w-full pl-9 pr-3.5 py-2 rounded-lg bg-[#F8FAFC] border border-[#E2E8F0] text-sm text-[#111827] focus:outline-none focus:border-[#2578FB] focus:ring-2 focus:ring-[#2578FB]/15"
@@ -917,7 +919,7 @@ export const BookingPage = () => {
                             <input
                               type="email"
                               required
-                              placeholder="e.g. vineet@example.com"
+                              placeholder="e.g. mail@example.com"
                               value={customerEmail}
                               onChange={(e) => setCustomerEmail(e.target.value)}
                               className="w-full pl-9 pr-3.5 py-2 rounded-lg bg-[#F8FAFC] border border-[#E2E8F0] text-sm text-[#111827] focus:outline-none focus:border-[#2578FB] focus:ring-2 focus:ring-[#2578FB]/15"
@@ -928,13 +930,13 @@ export const BookingPage = () => {
                         {/* Company Name (Optional) */}
                         <div>
                           <label className="block text-xs font-semibold text-[#111827] mb-1">
-                            Company Name <span className="text-[#5B6472] font-normal">(Optional)</span>
+                            Company Name
                           </label>
                           <div className="relative">
                             <Building className="w-4 h-4 text-[#5B6472] absolute left-3 top-3" />
                             <input
                               type="text"
-                              placeholder="e.g. HiveRift Tech"
+                              placeholder="e.g. Company Name"
                               value={companyName}
                               onChange={(e) => setCompanyName(e.target.value)}
                               className="w-full pl-9 pr-3.5 py-2 rounded-lg bg-[#F8FAFC] border border-[#E2E8F0] text-sm text-[#111827] focus:outline-none focus:border-[#2578FB] focus:ring-2 focus:ring-[#2578FB]/15"
@@ -945,13 +947,13 @@ export const BookingPage = () => {
                         {/* Purpose */}
                         <div>
                           <label className="block text-xs font-semibold text-[#111827] mb-1">
-                            Purpose of Meeting <span className="text-[#5B6472] font-normal">(Optional)</span>
+                            Purpose of Meeting 
                           </label>
                           <div className="relative">
                             <FileText className="w-4 h-4 text-[#5B6472] absolute left-3 top-3" />
                             <input
                               type="text"
-                              placeholder="e.g. Product Demo"
+                              placeholder="e.g. Enter Purpose of Meeting"
                               value={purpose}
                               onChange={(e) => setPurpose(e.target.value)}
                               className="w-full pl-9 pr-3.5 py-2 rounded-lg bg-[#F8FAFC] border border-[#E2E8F0] text-sm text-[#111827] focus:outline-none focus:border-[#2578FB] focus:ring-2 focus:ring-[#2578FB]/15"
@@ -1036,8 +1038,8 @@ export const BookingPage = () => {
                     {selectedMeetingType && (
                       <span className="text-[10px] text-[#5B6472] block truncate mt-0.5">
                         {selectedMeetingType.type === 'PHONE_CALL'
-                          ? selectedMeetingType.phoneNumber || 'Phone call'
-                          : selectedMeetingType.meetingLink || 'Virtual meeting'}
+                          ? 'Phone Call'
+                          : 'Online Video Meeting'}
                       </span>
                     )}
                   </div>
