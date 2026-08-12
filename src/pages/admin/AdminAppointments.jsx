@@ -13,6 +13,8 @@ import {
   ExternalLink,
   Calendar,
   Sparkles,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react';
 import api from '../../services/api';
 
@@ -24,6 +26,10 @@ export const AdminAppointments = () => {
   const [dateFilter, setDateFilter] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedApp, setSelectedApp] = useState(null);
+
+  // Pagination state (3 entries per page)
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 3;
 
   const fetchAppointments = () => {
     setLoading(true);
@@ -39,6 +45,11 @@ export const AdminAppointments = () => {
   };
 
   useEffect(() => { fetchAppointments(); }, [statusFilter, dateFilter]);
+
+  // Reset to page 1 whenever search or filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, statusFilter, dateFilter]);
 
   const handleStatusChange = async (id, newStatus) => {
     try {
@@ -95,7 +106,14 @@ export const AdminAppointments = () => {
     );
   });
 
-  const groupedAppointments = filteredAppointments.reduce((groups, app) => {
+  // Pagination calculation
+  const totalItems = filteredAppointments.length;
+  const totalPages = Math.ceil(totalItems / itemsPerPage) || 1;
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = Math.min(startIndex + itemsPerPage, totalItems);
+  const currentAppointments = filteredAppointments.slice(startIndex, endIndex);
+
+  const groupedAppointments = currentAppointments.reduce((groups, app) => {
     const dateKey = app.appointmentDate;
     if (!groups[dateKey]) groups[dateKey] = [];
     groups[dateKey].push(app);
@@ -103,6 +121,7 @@ export const AdminAppointments = () => {
   }, {});
 
   const sortedDates = Object.keys(groupedAppointments).sort((a, b) => (a < b ? 1 : -1));
+
 
   return (
     <div className="space-y-6">
@@ -295,6 +314,57 @@ export const AdminAppointments = () => {
           })
         )}
       </div>
+
+      {/* PAGINATION CONTROLS (3 entries per page) */}
+      {!loading && totalItems > 0 && (
+        <div className="bg-white border border-[#E2E8F0] p-4 rounded-2xl shadow-xs flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="text-xs font-semibold text-[#5B6472]">
+            Showing <span className="font-extrabold text-[#111827]">{totalItems === 0 ? 0 : startIndex + 1}</span> to{' '}
+            <span className="font-extrabold text-[#111827]">{endIndex}</span> of{' '}
+            <span className="font-extrabold text-[#111827]">{totalItems}</span> appointments
+            <span className="ml-2 text-[11px] text-[#2578FB] bg-[#EAF3FF] px-2 py-0.5 rounded-md border border-[#BFD8FF] font-bold">
+              (3 per page)
+            </span>
+          </div>
+
+          <div className="flex items-center gap-1.5">
+            {/* Previous Page Button */}
+            <button
+              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+              disabled={currentPage === 1}
+              className="inline-flex items-center gap-1 px-3 py-2 rounded-xl border border-[#E2E8F0] bg-[#F8FAFC] text-xs font-bold text-[#5B6472] hover:bg-[#EAF3FF] hover:text-[#2578FB] hover:border-[#BFD8FF] disabled:opacity-40 disabled:pointer-events-none transition-all cursor-pointer"
+            >
+              <ChevronLeft className="w-4 h-4" />
+              <span>Previous</span>
+            </button>
+
+            {/* Page Number Buttons */}
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
+              <button
+                key={pageNum}
+                onClick={() => setCurrentPage(pageNum)}
+                className={`w-9 h-9 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                  currentPage === pageNum
+                    ? 'bg-gradient-to-r from-[#2578FB] to-[#1257C7] text-white shadow-blue scale-105'
+                    : 'bg-[#F8FAFC] border border-[#E2E8F0] text-[#5B6472] hover:bg-[#EAF3FF] hover:text-[#2578FB]'
+                }`}
+              >
+                {pageNum}
+              </button>
+            ))}
+
+            {/* Next Page Button */}
+            <button
+              onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+              disabled={currentPage === totalPages}
+              className="inline-flex items-center gap-1 px-3 py-2 rounded-xl border border-[#E2E8F0] bg-[#F8FAFC] text-xs font-bold text-[#5B6472] hover:bg-[#EAF3FF] hover:text-[#2578FB] hover:border-[#BFD8FF] disabled:opacity-40 disabled:pointer-events-none transition-all cursor-pointer"
+            >
+              <span>Next</span>
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Appointment Details Modal */}
       {selectedApp && (

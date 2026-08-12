@@ -56,9 +56,9 @@ export const AdminLayout = ({ children }) => {
   return (
     <div className="min-h-screen bg-[#F8FAFC] flex flex-col lg:flex-row font-sans text-gray-800">
 
-      {/* DESKTOP SIDEBAR */}
-      <aside className="hidden lg:flex w-64 bg-white border-r border-[#E2E8F0] flex-col justify-between p-4 shadow-subtle z-30 sticky top-0 h-screen flex-shrink-0">
-        <div>
+      {/* DESKTOP SIDEBAR (FIXED POSITION) */}
+      <aside className="hidden lg:flex w-64 bg-white border-r border-[#E2E8F0] flex-col justify-between p-4 shadow-subtle z-30 fixed top-0 left-0 bottom-0 h-screen flex-shrink-0">
+        <div className="overflow-y-auto">
           {/* Logo Header */}
           <Link to="/admin/dashboard" className="flex items-center gap-2 mb-6 px-2 pt-2">
             <img
@@ -215,7 +215,7 @@ export const AdminLayout = ({ children }) => {
       )}
 
       {/* RIGHT WORKSPACE */}
-      <div className="flex-1 flex flex-col min-w-0 w-full">
+      <div className="flex-1 flex flex-col min-w-0 w-full lg:pl-64">
 
         {/* Top Header Bar */}
         <header className="bg-white border-b border-[#E2E8F0] px-4 sm:px-6 py-3.5 flex items-center justify-between shadow-xs sticky top-0 z-20">
