@@ -431,12 +431,6 @@ export const BookingPage = () => {
                   className="w-full h-[410px] object-cover rounded-2xl shadow-subtle"
                 />
 
-                {/* Top Right Highlight Tag */}
-                <div className="absolute top-6 right-6 bg-[#111827]/85 backdrop-blur-md border border-[#BFD8FF]/80 text-white px-3.5 py-1.5 rounded-full flex items-center gap-2 shadow-lg">
-                  <Sparkles className="w-3.5 h-3.5 text-[#2578FB] animate-pulse" />
-                  <span className="text-xs font-bold tracking-wide">HiveRift Appointment Portal</span>
-                </div>
-
                 {/* Bottom Left Floating Badge */}
                 <div className="absolute -bottom-5 left-4 sm:left-6 bg-white border border-[#BFD8FF] shadow-xl px-4 py-2.5 rounded-2xl flex items-center gap-3">
                   <div className="w-9 h-9 rounded-xl bg-[#2578FB] text-white flex items-center justify-center shadow-blue">
