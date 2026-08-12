@@ -363,24 +363,7 @@ export const BookingPage = () => {
         </div>
       </section>
 
-      {/* 2. TRUSTED LOGOS BANNER */}
-      <section className="border-y border-ivory-BORDER bg-white/60 py-6">
-        <div className="max-w-7xl mx-auto px-4 text-center">
-          <p className="text-xs font-semibold text-charcoal-MUTED uppercase tracking-widest mb-6">
-            Trusted by professionals and businesses worldwide
-          </p>
-          <div className="flex flex-wrap items-center justify-center gap-8 md:gap-16 opacity-75 grayscale hover:grayscale-0 transition-all font-sans font-bold text-sm tracking-wider text-[#5B6472]">
-            <div className="flex items-center gap-2"><Layers className="w-5 h-5 text-[#2578FB]" /> ACME CORP</div>
-            <div className="flex items-center gap-2"><Zap className="w-5 h-5 text-[#2578FB]" /> VELTRIX</div>
-            <div className="flex items-center gap-2"><Sparkles className="w-5 h-5 text-[#2578FB]" /> KANBA</div>
-            <div className="flex items-center gap-2"><Shield className="w-5 h-5 text-[#2578FB]" /> AVARA</div>
-            <div className="flex items-center gap-2"><Star className="w-5 h-5 text-[#2578FB]" /> HEXLABS</div>
-            <div className="flex items-center gap-2"><CheckCircle2 className="w-5 h-5 text-[#2578FB]" /> SOLVENCE</div>
-          </div>
-        </div>
-      </section>
-
-      {/* 3. FEATURES SECTION (WHY CHOOSE HIVERIFT?) */}
+      {/* 2. FEATURES SECTION (WHY CHOOSE HIVERIFT?) */}
       <section id="services" className="py-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
         <div className="text-center max-w-2xl mx-auto mb-8">
           <span className="text-xs font-bold text-[#2578FB] uppercase tracking-widest">
