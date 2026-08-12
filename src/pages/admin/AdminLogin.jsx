@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { useNavigate, useLocation, Link } from 'react-router-dom';
-import { Lock, Mail, ShieldCheck, KeyRound, AlertCircle, Eye, EyeOff, ArrowLeft } from 'lucide-react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { Mail, ShieldCheck, KeyRound, AlertCircle, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import hiveriftLogo from '../../assets/LOGO.svg';
 
@@ -136,26 +136,11 @@ export const AdminLogin = () => {
           </button>
         </form>
 
-        {/* Security Footer */}
-        <div className="pt-2 border-t border-[#E2E8F0] flex flex-col items-center gap-2 text-center">
-          <div className="flex items-center gap-1.5 text-[11px] font-semibold text-[#5B6472]">
-            <Lock className="w-3.5 h-3.5 text-emerald-600" />
-            <span>256-Bit SSL Encrypted Session</span>
-          </div>
-
-          <Link
-            to="/"
-            className="inline-flex items-center gap-1 text-xs font-bold text-[#2578FB] hover:underline pt-1"
-          >
-            <ArrowLeft className="w-3.5 h-3.5" />
-            <span>Back to Public Website</span>
-          </Link>
-        </div>
-
       </div>
     </div>
   );
 };
 
 export default AdminLogin;
+
 
