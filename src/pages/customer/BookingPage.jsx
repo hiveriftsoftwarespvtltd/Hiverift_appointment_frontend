@@ -482,13 +482,9 @@ export const BookingPage = () => {
               <Sparkles className="w-3 h-3 text-[#2578FB] animate-pulse" />
               Consultation Booking
             </div>
-            <h1 className="font-extrabold text-xl sm:text-3xl md:text-4xl text-[#111827] tracking-tight font-sans mb-1.5 sm:mb-2">
+            <h1 className="font-extrabold text-xl sm:text-3xl md:text-4xl text-[#111827] tracking-tight font-sans">
               Book Your 30-Minute Consultation
             </h1>
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-[11px] sm:text-xs font-bold">
-              <Globe className="w-3.5 h-3.5 text-emerald-600 flex-shrink-0" />
-              <span>Times auto-converted to your timezone</span>
-            </div>
           </div>
 
           {/* STEPPER PROGRESS HEADER - Fully Responsive on Mobile & Desktop */}
