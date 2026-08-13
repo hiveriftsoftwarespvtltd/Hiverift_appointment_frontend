@@ -18,10 +18,8 @@ import AdminBlockedTimes from './pages/admin/AdminBlockedTimes';
 import { useAuth } from './context/AuthContext';
 
 const CustomerLayout = ({ children }) => (
-  <div className="min-h-screen flex flex-col bg-ivory text-charcoal font-sans pt-16">
-    <Header />
+  <div className="min-h-screen flex flex-col bg-ivory text-charcoal font-sans">
     <main className="flex-1">{children}</main>
-    <Footer />
   </div>
 );
 

@@ -59,11 +59,14 @@ export const Footer = () => {
 
           {/* Column 1: Brand Logo & Description (Spans 2 Cols) */}
           <div className="lg:col-span-2 space-y-5">
-            <div className="flex items-center group cursor-pointer" onClick={scrollToTop}>
+            <div
+              className="inline-flex items-center bg-white px-3.5 py-2 rounded-2xl shadow-subtle group cursor-pointer hover:shadow-md hover:scale-[1.02] transition-all duration-300"
+              onClick={scrollToTop}
+            >
               <img
                 src={hiveriftLogo}
                 alt="HiveRift Logo"
-                className="h-10 sm:h-12 w-auto object-contain group-hover:opacity-90 transition-opacity duration-300"
+                className="h-9 sm:h-10 w-auto object-contain"
               />
             </div>
 

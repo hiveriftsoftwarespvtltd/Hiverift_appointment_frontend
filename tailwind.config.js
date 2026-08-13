@@ -4,33 +4,29 @@ export default {
   theme: {
     extend: {
       colors: {
-        gold: {
-          PRIMARY: '#C89B3C',
-          DARK: '#A87C20',
-          LIGHT: '#E6C875',
-          SOFT: '#FBF6E8',
-          TINT: '#F7EFD8',
-          BORDER: '#D9B65A',
-        },
-        charcoal: {
-          DEFAULT: '#171717',
-          DEEP: '#111111',
-          SECONDARY: '#5F5F5F',
-          MUTED: '#8A8A8A',
-        },
-        ivory: {
-          DEFAULT: '#FFFDF8',
-          CARD: '#FFFFFF',
-          BORDER: '#E8E2D6',
+        brand: {
+          50: '#EAF3FF',
+          100: '#D5E7FF',
+          200: '#BFD8FF',
+          300: '#93BEFF',
+          400: '#5C9EFF',
+          500: '#2578FB',
+          600: '#1257C7',
+          700: '#0D47A1',
+          800: '#0A3780',
+          900: '#072659',
+          DEFAULT: '#2578FB',
         },
       },
       fontFamily: {
         sans: ['Inter', 'Manrope', 'sans-serif'],
       },
       boxShadow: {
-        gold: '0 6px 18px rgba(200, 155, 60, 0.22)',
-        subtle: '0 8px 24px rgba(20, 15, 5, 0.05)',
-        outer: '0 8px 30px rgba(35, 27, 10, 0.06)',
+        blue: '0 6px 20px rgba(37, 120, 251, 0.25)',
+        card: '0 4px 20px rgba(0, 0, 0, 0.04)',
+        subtle: '0 8px 24px rgba(17, 24, 39, 0.05)',
+        outer: '0 8px 30px rgba(17, 24, 39, 0.06)',
+        floating: '0 12px 36px rgba(37, 120, 251, 0.12)',
       },
     },
   },

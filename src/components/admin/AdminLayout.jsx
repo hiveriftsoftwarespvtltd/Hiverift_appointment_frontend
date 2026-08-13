@@ -56,11 +56,11 @@ export const AdminLayout = ({ children }) => {
   return (
     <div className="min-h-screen bg-[#F8FAFC] flex flex-col lg:flex-row font-sans text-gray-800">
 
-      {/* DESKTOP SIDEBAR (FIXED POSITION) */}
-      <aside className="hidden lg:flex w-64 bg-white border-r border-[#E2E8F0] flex-col justify-between p-4 shadow-subtle z-30 fixed top-0 left-0 bottom-0 h-screen flex-shrink-0">
-        <div className="overflow-y-auto">
+      {/* DESKTOP SIDEBAR (FIXED POSITION & NO HORIZONTAL SCROLL) */}
+      <aside className="hidden lg:flex w-64 bg-white border-r border-[#E2E8F0] flex-col justify-between p-4 shadow-subtle z-30 fixed top-0 left-0 bottom-0 h-screen flex-shrink-0 overflow-hidden select-none">
+        <div className="overflow-y-auto overflow-x-hidden pr-0.5">
           {/* Logo Header */}
-          <Link to="/admin/dashboard" className="flex items-center gap-2 mb-6 px-2 pt-2">
+          <Link to="/admin/dashboard" className="flex items-center justify-between gap-2 mb-6 px-1 pt-1">
             <img
               src={hiveriftLogo}
               alt="HiveRift Logo"
@@ -72,7 +72,7 @@ export const AdminLayout = ({ children }) => {
           </Link>
 
           {/* Navigation Links */}
-          <nav className="space-y-1.5">
+          <nav className="space-y-1.5 overflow-hidden">
             {navItems.map((item) => {
               const Icon = item.icon;
               return (
@@ -80,15 +80,15 @@ export const AdminLayout = ({ children }) => {
                   key={item.to}
                   to={item.to}
                   className={({ isActive }) =>
-                    `flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all duration-200 ${
+                    `flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold transition-colors duration-150 w-full ${
                       isActive
-                        ? 'bg-gradient-to-r from-[#2578FB] to-[#1257C7] text-white shadow-blue scale-[1.02]'
+                        ? 'bg-gradient-to-r from-[#2578FB] to-[#1257C7] text-white shadow-blue'
                         : 'text-[#5B6472] hover:text-[#111827] hover:bg-[#EAF3FF]/60 font-semibold'
                     }`
                   }
                 >
                   <Icon className="w-4 h-4 flex-shrink-0" />
-                  <span>{item.label}</span>
+                  <span className="truncate">{item.label}</span>
                 </NavLink>
               );
             })}
@@ -96,7 +96,7 @@ export const AdminLayout = ({ children }) => {
         </div>
 
         {/* Sidebar Footer */}
-        <div className="pt-4 border-t border-[#E2E8F0] space-y-3">
+        <div className="pt-4 border-t border-[#E2E8F0] space-y-3 overflow-hidden">
           
           {/* Customer View Link */}
           <Link
@@ -113,7 +113,7 @@ export const AdminLayout = ({ children }) => {
               <div className="w-7 h-7 rounded-lg bg-[#2578FB] text-white flex items-center justify-center font-bold text-xs flex-shrink-0 shadow-2xs">
                 <UserCheck className="w-4 h-4" />
               </div>
-              <div className="overflow-hidden">
+              <div className="overflow-hidden min-w-0">
                 <span className="font-bold text-xs text-[#111827] block truncate">
                   {admin.name || 'Admin'}
                 </span>
@@ -126,7 +126,7 @@ export const AdminLayout = ({ children }) => {
 
           <button
             onClick={logout}
-            className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-xl border border-red-200 bg-red-50/80 text-red-700 text-xs font-bold hover:bg-red-100 transition-colors"
+            className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-xl border border-red-200 bg-red-50/80 text-red-700 text-xs font-bold hover:bg-red-100 transition-colors cursor-pointer"
           >
             <LogOut className="w-3.5 h-3.5" />
             Sign Out
@@ -142,8 +142,8 @@ export const AdminLayout = ({ children }) => {
             onClick={() => setMobileOpen(false)}
           ></div>
 
-          <aside className="relative w-64 bg-white border-r border-[#E2E8F0] flex flex-col justify-between p-4 shadow-2xl z-50 h-full">
-            <div>
+          <aside className="relative w-64 bg-white border-r border-[#E2E8F0] flex flex-col justify-between p-4 shadow-2xl z-50 h-full overflow-hidden">
+            <div className="overflow-y-auto overflow-x-hidden">
               <div className="flex items-center justify-between mb-6 px-1 pt-1 border-b border-[#E2E8F0] pb-3">
                 <Link to="/admin/dashboard" className="flex items-center gap-2">
                   <img
@@ -161,7 +161,7 @@ export const AdminLayout = ({ children }) => {
                 </button>
               </div>
 
-              <nav className="space-y-1.5">
+              <nav className="space-y-1.5 overflow-hidden">
                 {navItems.map((item) => {
                   const Icon = item.icon;
                   return (
@@ -170,7 +170,7 @@ export const AdminLayout = ({ children }) => {
                       to={item.to}
                       onClick={() => setMobileOpen(false)}
                       className={({ isActive }) =>
-                        `flex items-center gap-3 px-3.5 py-3 rounded-xl text-xs font-bold transition-all ${
+                        `flex items-center gap-3 px-3.5 py-3 rounded-xl text-xs font-bold transition-colors w-full ${
                           isActive
                             ? 'bg-gradient-to-r from-[#2578FB] to-[#1257C7] text-white shadow-blue'
                             : 'text-[#5B6472] hover:text-[#111827] hover:bg-[#EAF3FF]/60 font-semibold'
@@ -178,20 +178,20 @@ export const AdminLayout = ({ children }) => {
                       }
                     >
                       <Icon className="w-4 h-4 flex-shrink-0" />
-                      <span>{item.label}</span>
+                      <span className="truncate">{item.label}</span>
                     </NavLink>
                   );
                 })}
               </nav>
             </div>
 
-            <div className="pt-3 border-t border-[#E2E8F0] space-y-2">
+            <div className="pt-3 border-t border-[#E2E8F0] space-y-2 overflow-hidden">
               {admin && (
                 <div className="flex items-center gap-2.5 px-3 py-2 bg-[#EAF3FF]/60 rounded-xl border border-[#BFD8FF]">
                   <div className="w-6 h-6 rounded-lg bg-[#2578FB] text-white flex items-center justify-center font-bold text-xs flex-shrink-0">
                     <UserCheck className="w-3.5 h-3.5" />
                   </div>
-                  <div className="overflow-hidden">
+                  <div className="overflow-hidden min-w-0">
                     <span className="font-bold text-xs text-[#111827] block truncate">
                       {admin.name || 'Admin'}
                     </span>

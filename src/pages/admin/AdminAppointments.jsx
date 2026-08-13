@@ -15,6 +15,8 @@ import {
   Sparkles,
   ChevronLeft,
   ChevronRight,
+  Building,
+  Globe,
 } from 'lucide-react';
 import api from '../../services/api';
 
@@ -39,12 +41,18 @@ export const AdminAppointments = () => {
 
     api
       .get(url)
-      .then((res) => { setAppointments(res.data); })
-      .catch((err) => { console.error('Error fetching appointments', err); })
+      .then((res) => {
+        setAppointments(res.data);
+      })
+      .catch((err) => {
+        console.error('Error fetching appointments', err);
+      })
       .finally(() => setLoading(false));
   };
 
-  useEffect(() => { fetchAppointments(); }, [statusFilter, dateFilter]);
+  useEffect(() => {
+    fetchAppointments();
+  }, [statusFilter, dateFilter]);
 
   // Reset to page 1 whenever search or filters change
   useEffect(() => {
@@ -58,7 +66,9 @@ export const AdminAppointments = () => {
       if (selectedApp && selectedApp._id === id) {
         setSelectedApp({ ...selectedApp, status: newStatus });
       }
-    } catch (err) { alert('Failed to update status.'); }
+    } catch (err) {
+      alert('Failed to update status.');
+    }
   };
 
   const handleDelete = async (id) => {
@@ -67,16 +77,19 @@ export const AdminAppointments = () => {
       await api.delete(`/admin/appointments/${id}`);
       fetchAppointments();
       if (selectedApp && selectedApp._id === id) setSelectedApp(null);
-    } catch (err) { alert('Failed to delete appointment.'); }
+    } catch (err) {
+      alert('Failed to delete appointment.');
+    }
   };
 
   const format12Hour = (time24) => {
     if (!time24) return '';
     let [h, m] = time24.split(':').map(Number);
     const ampm = h >= 12 ? 'PM' : 'AM';
-    h = h % 12; h = h ? h : 12;
-    const mins = m < 10 ? '0' + m : m;
-    return `${h}:${mins} ${ampm}`;
+    h = h % 12;
+    h = h ? h : 12;
+    const mins = m < 10 ? '0' + m : m.toString();
+    return `${h.toString().padStart(2, '0')}:${mins} ${ampm}`;
   };
 
   const formatDateDDMMYYYY = (dateStr) => {
@@ -87,22 +100,31 @@ export const AdminAppointments = () => {
 
   const getStatusBadge = (status) => {
     switch (status) {
-      case 'PENDING':    return 'bg-amber-50 text-amber-700 border-amber-300';
-      case 'CONFIRMED':  return 'bg-emerald-50 text-emerald-700 border-emerald-300';
-      case 'COMPLETED':  return 'bg-blue-50 text-blue-700 border-blue-300';
-      case 'CANCELLED':  return 'bg-red-50 text-red-700 border-red-300';
-      default:           return 'bg-gray-100 text-gray-700 border-gray-300';
+      case 'PENDING':
+        return 'bg-amber-50 text-amber-700 border-amber-300';
+      case 'CONFIRMED':
+        return 'bg-emerald-50 text-emerald-700 border-emerald-300';
+      case 'COMPLETED':
+        return 'bg-blue-50 text-blue-700 border-blue-300';
+      case 'CANCELLED':
+        return 'bg-red-50 text-red-700 border-red-300';
+      default:
+        return 'bg-gray-100 text-gray-700 border-gray-300';
     }
   };
 
   const filteredAppointments = appointments.filter((app) => {
     if (!searchQuery) return true;
     const q = searchQuery.toLowerCase();
+    const name = (app.customerName || `${app.firstName || ''} ${app.lastName || ''}`).toLowerCase();
+    const email = (app.customerEmail || '').toLowerCase();
+    const mobile = (app.customerMobile || '').toLowerCase();
+    const business = (app.businessName || app.companyName || '').toLowerCase();
     return (
-      app.customerName.toLowerCase().includes(q) ||
-      app.customerEmail.toLowerCase().includes(q) ||
-      app.customerMobile.includes(q) ||
-      (app.companyName && app.companyName.toLowerCase().includes(q))
+      name.includes(q) ||
+      email.includes(q) ||
+      mobile.includes(q) ||
+      business.includes(q)
     );
   });
 
@@ -122,7 +144,6 @@ export const AdminAppointments = () => {
 
   const sortedDates = Object.keys(groupedAppointments).sort((a, b) => (a < b ? 1 : -1));
 
-
   return (
     <div className="space-y-6">
 
@@ -134,15 +155,15 @@ export const AdminAppointments = () => {
             <span>Bookings Manager</span>
           </div>
           <h1 className="text-2xl font-extrabold text-[#111827] font-sans tracking-tight">
-            Appointment Records
+            Consultation Bookings (ET)
           </h1>
           <p className="text-xs text-[#5B6472] font-medium">
-            Filter, search, view details, and manage status of all customer bookings (Organised Date-Wise)
+            Manage all 30-minute consultation appointments scheduled in Eastern Time (ET).
           </p>
         </div>
         <button
           onClick={fetchAppointments}
-          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] text-[#5B6472] font-bold text-xs hover:bg-[#EAF3FF] hover:text-[#2578FB] hover:border-[#BFD8FF] transition-all self-start sm:self-auto"
+          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] text-[#5B6472] font-bold text-xs hover:bg-[#EAF3FF] hover:text-[#2578FB] hover:border-[#BFD8FF] transition-all self-start sm:self-auto cursor-pointer"
         >
           <RefreshCw className="w-3.5 h-3.5" />
           Refresh List
@@ -155,7 +176,7 @@ export const AdminAppointments = () => {
           <Search className="w-4 h-4 text-[#5B6472] absolute left-3 top-1/2 -translate-y-1/2" />
           <input
             type="text"
-            placeholder="Search by name, email, phone..."
+            placeholder="Search by client, business, email, phone..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] text-xs text-[#111827] focus:outline-none focus:border-[#2578FB] focus:bg-white transition-colors"
@@ -202,12 +223,18 @@ export const AdminAppointments = () => {
             const apps = groupedAppointments[dateKey];
             const dateObj = new Date(dateKey + 'T00:00:00');
             const dayFull = dateObj.toLocaleDateString('en-US', {
-              weekday: 'long', month: 'long', day: 'numeric', year: 'numeric',
+              weekday: 'long',
+              month: 'long',
+              day: 'numeric',
+              year: 'numeric',
             });
             const ddmmyyyy = formatDateDDMMYYYY(dateKey);
 
             return (
-              <div key={dateKey} className="bg-white border border-[#E2E8F0] rounded-2xl shadow-xs overflow-hidden">
+              <div
+                key={dateKey}
+                className="bg-white border border-[#E2E8F0] rounded-2xl shadow-xs overflow-hidden"
+              >
                 {/* DATE GROUP HEADER */}
                 <div className="bg-[#EAF3FF]/50 border-b border-[#BFD8FF]/50 px-5 py-3.5 flex items-center justify-between">
                   <div className="flex items-center gap-3">
@@ -215,12 +242,16 @@ export const AdminAppointments = () => {
                       <CalendarDays className="w-4 h-4" />
                     </div>
                     <div>
-                      <span className="font-extrabold text-sm text-[#111827] font-sans block">{dayFull}</span>
-                      <span className="text-[11px] font-bold text-[#2578FB] font-mono">Date: {ddmmyyyy}</span>
+                      <span className="font-extrabold text-sm text-[#111827] font-sans block">
+                        {dayFull} (ET)
+                      </span>
+                      <span className="text-[11px] font-bold text-[#2578FB] font-mono">
+                        Date: {ddmmyyyy}
+                      </span>
                     </div>
                   </div>
                   <span className="text-xs font-bold text-[#2578FB] bg-white px-3.5 py-1.5 rounded-full border border-[#BFD8FF]">
-                    {apps.length} {apps.length === 1 ? 'Meeting' : 'Meetings'}
+                    {apps.length} {apps.length === 1 ? 'Consultation' : 'Consultations'}
                   </span>
                 </div>
 
@@ -229,83 +260,103 @@ export const AdminAppointments = () => {
                   <table className="w-full text-left text-xs border-collapse">
                     <thead>
                       <tr className="bg-[#F8FAFC] border-b border-[#E2E8F0] text-[#5B6472] uppercase tracking-wider text-[10px] font-extrabold">
-                        <th className="py-3 px-4">Customer</th>
+                        <th className="py-3 px-4">Client / Business</th>
                         <th className="py-3 px-4">Meeting Type</th>
-                        <th className="py-3 px-4">Time Slot</th>
+                        <th className="py-3 px-4">Time Slot (ET)</th>
                         <th className="py-3 px-4">Join Link</th>
                         <th className="py-3 px-4">Status</th>
                         <th className="py-3 px-4 text-right">Actions</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-[#E2E8F0]">
-                      {apps.map((app) => (
-                        <tr key={app._id} className="hover:bg-[#EAF3FF]/20 transition-colors">
-                          <td className="py-3.5 px-4">
-                            <div className="font-bold text-[#111827]">{app.customerName}</div>
-                            <div className="text-[#5B6472] text-[11px]">{app.customerEmail}</div>
-                            <div className="text-[#5B6472] text-[11px]">{app.customerMobile}</div>
-                          </td>
-                          <td className="py-3.5 px-4">
-                            <span className="px-2.5 py-1 rounded-lg bg-[#EAF3FF] text-[#2578FB] border border-[#BFD8FF] font-extrabold text-[11px]">
-                              {app.meetingTypeTitle}
-                            </span>
-                          </td>
-                          <td className="py-3.5 px-4 text-[#111827] font-medium">
-                            <div className="font-bold flex items-center gap-1.5">
-                              <Clock className="w-3.5 h-3.5 text-[#2578FB]" />
-                              {format12Hour(app.startTime)} - {format12Hour(app.endTime)}
-                            </div>
-                            <div className="text-[#5B6472] text-[11px]">Duration: {app.duration} mins</div>
-                          </td>
-                          <td className="py-3.5 px-4">
-                            {app.meetingLink ? (
-                              <a
-                                href={app.meetingLink}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#2578FB] hover:bg-[#1257C7] text-white font-extrabold text-[11px] transition-all"
+                      {apps.map((app) => {
+                        const displayName =
+                          app.customerName ||
+                          `${app.firstName || ''} ${app.lastName || ''}`.trim() ||
+                          'Client';
+                        const business = app.businessName || app.companyName;
+
+                        return (
+                          <tr key={app._id} className="hover:bg-[#EAF3FF]/20 transition-colors">
+                            <td className="py-3.5 px-4">
+                              <div className="font-bold text-[#111827]">{displayName}</div>
+                              {business && (
+                                <div className="text-[11px] text-[#2578FB] font-medium">
+                                  {business}
+                                </div>
+                              )}
+                              <div className="text-[#5B6472] text-[11px]">
+                                {app.customerEmail} · {app.customerMobile}
+                              </div>
+                            </td>
+                            <td className="py-3.5 px-4">
+                              <span className="px-2.5 py-1 rounded-lg bg-[#EAF3FF] text-[#2578FB] border border-[#BFD8FF] font-extrabold text-[11px]">
+                                {app.meetingTypeTitle}
+                              </span>
+                            </td>
+                            <td className="py-3.5 px-4 text-[#111827] font-medium">
+                              <div className="font-bold flex items-center gap-1.5">
+                                <Clock className="w-3.5 h-3.5 text-[#2578FB]" />
+                                {format12Hour(app.startTime)} - {format12Hour(app.endTime)} ET
+                              </div>
+                              <div className="text-[#5B6472] text-[11px]">
+                                30 Mins Consultation
+                              </div>
+                            </td>
+                            <td className="py-3.5 px-4">
+                              {app.meetingLink ? (
+                                <a
+                                  href={app.meetingLink}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#2578FB] hover:bg-[#1257C7] text-white font-extrabold text-[11px] transition-all"
+                                >
+                                  <Video className="w-3 h-3" />
+                                  <span>Join</span>
+                                  <ExternalLink className="w-3 h-3" />
+                                </a>
+                              ) : (
+                                <span className="text-[#5B6472] text-[11px] font-medium">
+                                  {app.customerMobile}
+                                </span>
+                              )}
+                            </td>
+                            <td className="py-3.5 px-4">
+                              <select
+                                value={app.status}
+                                onChange={(e) => handleStatusChange(app._id, e.target.value)}
+                                className={`px-2.5 py-1.5 rounded-xl border text-[11px] font-extrabold focus:outline-none cursor-pointer ${getStatusBadge(
+                                  app.status,
+                                )}`}
                               >
-                                <Video className="w-3 h-3" />
-                                <span>Join</span>
-                                <ExternalLink className="w-3 h-3" />
-                              </a>
-                            ) : (
-                              <span className="text-[#5B6472] text-[11px] font-medium">{app.customerMobile}</span>
-                            )}
-                          </td>
-                          <td className="py-3.5 px-4">
-                            <select
-                              value={app.status}
-                              onChange={(e) => handleStatusChange(app._id, e.target.value)}
-                              className={`px-2.5 py-1.5 rounded-xl border text-[11px] font-extrabold focus:outline-none cursor-pointer ${getStatusBadge(app.status)}`}
-                            >
-                              <option value="PENDING">PENDING</option>
-                              <option value="CONFIRMED">CONFIRMED</option>
-                              <option value="COMPLETED">COMPLETED</option>
-                              <option value="CANCELLED">CANCELLED</option>
-                              <option value="NO_SHOW">NO_SHOW</option>
-                            </select>
-                          </td>
-                          <td className="py-3.5 px-4 text-right">
-                            <div className="flex items-center justify-end gap-2">
-                              <button
-                                onClick={() => setSelectedApp(app)}
-                                title="View Full Details"
-                                className="p-1.5 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] hover:bg-[#EAF3FF] text-[#5B6472] hover:text-[#2578FB] hover:border-[#BFD8FF] transition-colors"
-                              >
-                                <Eye className="w-3.5 h-3.5" />
-                              </button>
-                              <button
-                                onClick={() => handleDelete(app._id)}
-                                title="Delete"
-                                className="p-1.5 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] hover:bg-red-50 text-[#5B6472] hover:text-red-600 hover:border-red-200 transition-colors"
-                              >
-                                <Trash2 className="w-3.5 h-3.5" />
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
+                                <option value="PENDING">PENDING</option>
+                                <option value="CONFIRMED">CONFIRMED</option>
+                                <option value="COMPLETED">COMPLETED</option>
+                                <option value="CANCELLED">CANCELLED</option>
+                                <option value="NO_SHOW">NO_SHOW</option>
+                              </select>
+                            </td>
+                            <td className="py-3.5 px-4 text-right">
+                              <div className="flex items-center justify-end gap-2">
+                                <button
+                                  onClick={() => setSelectedApp(app)}
+                                  title="View Full Details"
+                                  className="p-1.5 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] hover:bg-[#EAF3FF] text-[#5B6472] hover:text-[#2578FB] hover:border-[#BFD8FF] transition-colors cursor-pointer"
+                                >
+                                  <Eye className="w-3.5 h-3.5" />
+                                </button>
+                                <button
+                                  onClick={() => handleDelete(app._id)}
+                                  title="Delete"
+                                  className="p-1.5 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] hover:bg-red-50 text-[#5B6472] hover:text-red-600 hover:border-red-200 transition-colors cursor-pointer"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })}
                     </tbody>
                   </table>
                 </div>
@@ -319,8 +370,11 @@ export const AdminAppointments = () => {
       {!loading && totalItems > 0 && (
         <div className="bg-white border border-[#E2E8F0] p-4 rounded-2xl shadow-xs flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="text-xs font-semibold text-[#5B6472]">
-            Showing <span className="font-extrabold text-[#111827]">{totalItems === 0 ? 0 : startIndex + 1}</span> to{' '}
-            <span className="font-extrabold text-[#111827]">{endIndex}</span> of{' '}
+            Showing{' '}
+            <span className="font-extrabold text-[#111827]">
+              {totalItems === 0 ? 0 : startIndex + 1}
+            </span>{' '}
+            to <span className="font-extrabold text-[#111827]">{endIndex}</span> of{' '}
             <span className="font-extrabold text-[#111827]">{totalItems}</span> appointments
             <span className="ml-2 text-[11px] text-[#2578FB] bg-[#EAF3FF] px-2 py-0.5 rounded-md border border-[#BFD8FF] font-bold">
               (3 per page)
@@ -328,7 +382,6 @@ export const AdminAppointments = () => {
           </div>
 
           <div className="flex items-center gap-1.5">
-            {/* Previous Page Button */}
             <button
               onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
               disabled={currentPage === 1}
@@ -338,7 +391,6 @@ export const AdminAppointments = () => {
               <span>Previous</span>
             </button>
 
-            {/* Page Number Buttons */}
             {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
               <button
                 key={pageNum}
@@ -353,7 +405,6 @@ export const AdminAppointments = () => {
               </button>
             ))}
 
-            {/* Next Page Button */}
             <button
               onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
               disabled={currentPage === totalPages}
@@ -375,11 +426,13 @@ export const AdminAppointments = () => {
                 <div className="w-9 h-9 rounded-xl bg-[#EAF3FF] border border-[#BFD8FF] flex items-center justify-center text-[#2578FB]">
                   <CalendarDays className="w-5 h-5" />
                 </div>
-                <h3 className="font-extrabold text-base text-[#111827]">Appointment Details</h3>
+                <h3 className="font-extrabold text-base text-[#111827]">
+                  Consultation Details
+                </h3>
               </div>
               <button
                 onClick={() => setSelectedApp(null)}
-                className="p-1.5 rounded-xl text-[#5B6472] hover:text-[#111827] hover:bg-[#F8FAFC] transition-colors"
+                className="p-1.5 rounded-xl text-[#5B6472] hover:text-[#111827] hover:bg-[#F8FAFC] transition-colors cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -388,12 +441,23 @@ export const AdminAppointments = () => {
             <div className="space-y-3 text-xs">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <span className="text-[#5B6472] block text-[11px] font-semibold mb-0.5">Customer Name</span>
-                  <span className="font-extrabold text-[#111827] text-sm">{selectedApp.customerName}</span>
+                  <span className="text-[#5B6472] block text-[11px] font-semibold mb-0.5">
+                    Client Name
+                  </span>
+                  <span className="font-extrabold text-[#111827] text-sm">
+                    {selectedApp.customerName ||
+                      `${selectedApp.firstName || ''} ${selectedApp.lastName || ''}`.trim()}
+                  </span>
                 </div>
                 <div>
-                  <span className="text-[#5B6472] block text-[11px] font-semibold mb-0.5">Status</span>
-                  <span className={`font-extrabold px-2.5 py-0.5 rounded-lg border inline-block mt-0.5 ${getStatusBadge(selectedApp.status)}`}>
+                  <span className="text-[#5B6472] block text-[11px] font-semibold mb-0.5">
+                    Status
+                  </span>
+                  <span
+                    className={`font-extrabold px-2.5 py-0.5 rounded-lg border inline-block mt-0.5 ${getStatusBadge(
+                      selectedApp.status,
+                    )}`}
+                  >
                     {selectedApp.status}
                   </span>
                 </div>
@@ -401,35 +465,57 @@ export const AdminAppointments = () => {
 
               <div className="grid grid-cols-2 gap-3 border-t border-[#E2E8F0] pt-3">
                 <div>
-                  <span className="text-[#5B6472] block text-[11px] font-semibold mb-0.5">Email</span>
-                  <span className="font-semibold text-[#111827]">{selectedApp.customerEmail}</span>
+                  <span className="text-[#5B6472] block text-[11px] font-semibold mb-0.5">
+                    Email
+                  </span>
+                  <span className="font-semibold text-[#111827]">
+                    {selectedApp.customerEmail}
+                  </span>
                 </div>
                 <div>
-                  <span className="text-[#5B6472] block text-[11px] font-semibold mb-0.5">Mobile</span>
-                  <span className="font-semibold text-[#111827]">{selectedApp.customerMobile}</span>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3 border-t border-[#E2E8F0] pt-3">
-                <div>
-                  <span className="text-[#5B6472] block text-[11px] font-semibold mb-0.5">Company</span>
-                  <span className="font-semibold text-[#111827]">{selectedApp.companyName || 'N/A'}</span>
-                </div>
-                <div>
-                  <span className="text-[#5B6472] block text-[11px] font-semibold mb-0.5">Purpose</span>
-                  <span className="font-semibold text-[#111827]">{selectedApp.purpose || 'N/A'}</span>
+                  <span className="text-[#5B6472] block text-[11px] font-semibold mb-0.5">
+                    Mobile
+                  </span>
+                  <span className="font-semibold text-[#111827] font-mono">
+                    {selectedApp.customerMobile}
+                  </span>
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-3 border-t border-[#E2E8F0] pt-3">
                 <div>
-                  <span className="text-[#5B6472] block text-[11px] font-semibold mb-0.5">Meeting Type</span>
-                  <span className="font-extrabold text-[#111827]">{selectedApp.meetingTypeTitle}</span>
+                  <span className="text-[#5B6472] block text-[11px] font-semibold mb-0.5">
+                    Business Name
+                  </span>
+                  <span className="font-semibold text-[#111827]">
+                    {selectedApp.businessName || selectedApp.companyName || 'N/A'}
+                  </span>
                 </div>
                 <div>
-                  <span className="text-[#5B6472] block text-[11px] font-semibold mb-0.5">Link / Phone</span>
-                  <span className="font-semibold text-[#111827] truncate block">
-                    {selectedApp.meetingLink || selectedApp.phoneNumber || 'N/A'}
+                  <span className="text-[#5B6472] block text-[11px] font-semibold mb-0.5">
+                    Purpose
+                  </span>
+                  <span className="font-semibold text-[#111827]">
+                    {selectedApp.purpose || 'N/A'}
+                  </span>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3 border-t border-[#E2E8F0] pt-3">
+                <div>
+                  <span className="text-[#5B6472] block text-[11px] font-semibold mb-0.5">
+                    Meeting Type
+                  </span>
+                  <span className="font-extrabold text-[#111827]">
+                    {selectedApp.meetingTypeTitle}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-[#5B6472] block text-[11px] font-semibold mb-0.5">
+                    Client Timezone
+                  </span>
+                  <span className="font-semibold text-[#2578FB] truncate block">
+                    {selectedApp.clientTimezone || 'America/New_York (ET)'}
                   </span>
                 </div>
               </div>
@@ -437,8 +523,12 @@ export const AdminAppointments = () => {
               {selectedApp.meetingLink && (
                 <div className="border-t border-[#E2E8F0] pt-3 bg-[#EAF3FF]/40 p-3 rounded-xl border border-[#BFD8FF] flex items-center justify-between">
                   <div>
-                    <span className="font-extrabold text-[#2578FB] block text-xs">Direct Meeting Link</span>
-                    <span className="text-[10px] text-[#5B6472] truncate max-w-xs block">{selectedApp.meetingLink}</span>
+                    <span className="font-extrabold text-[#2578FB] block text-xs">
+                      Direct Meeting Link
+                    </span>
+                    <span className="text-[10px] text-[#5B6472] truncate max-w-xs block font-mono">
+                      {selectedApp.meetingLink}
+                    </span>
                   </div>
                   <a
                     href={selectedApp.meetingLink}
@@ -453,9 +543,12 @@ export const AdminAppointments = () => {
               )}
 
               <div className="border-t border-[#E2E8F0] pt-3">
-                <span className="text-[#5B6472] block text-[11px] font-semibold mb-0.5">Scheduled Time</span>
+                <span className="text-[#5B6472] block text-[11px] font-semibold mb-0.5">
+                  Scheduled Time (Eastern Time - ET)
+                </span>
                 <span className="font-extrabold text-[#111827]">
-                  {selectedApp.appointmentDate} ({format12Hour(selectedApp.startTime)} - {format12Hour(selectedApp.endTime)})
+                  {selectedApp.appointmentDate} at {format12Hour(selectedApp.startTime)} -{' '}
+                  {format12Hour(selectedApp.endTime)} ET (30 Mins)
                 </span>
               </div>
             </div>
@@ -463,7 +556,7 @@ export const AdminAppointments = () => {
             <div className="pt-3 border-t border-[#E2E8F0] flex justify-end">
               <button
                 onClick={() => setSelectedApp(null)}
-                className="px-5 py-2.5 bg-gradient-to-r from-[#2578FB] to-[#1257C7] text-white font-extrabold text-xs rounded-xl shadow-blue"
+                className="px-5 py-2.5 bg-gradient-to-r from-[#2578FB] to-[#1257C7] text-white font-extrabold text-xs rounded-xl shadow-blue cursor-pointer"
               >
                 Close Details
               </button>
