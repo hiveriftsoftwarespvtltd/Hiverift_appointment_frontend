@@ -163,6 +163,9 @@ export const BookingPage = () => {
   const [businessName, setBusinessName] = useState('');
   const [purpose, setPurpose] = useState('');
 
+  const [bookingLoading, setBookingLoading] = useState(false);
+  const [bookingError, setBookingError] = useState('');
+
   // Day index (0-6) to Backend DayOfWeek Enum Mapping
   const DAY_INDEX_TO_ENUM = [
     'SUNDAY',
