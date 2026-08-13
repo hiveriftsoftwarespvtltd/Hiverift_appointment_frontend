@@ -503,7 +503,7 @@ export const BookingPage = () => {
               className="h-10 sm:h-12 md:h-14 w-auto object-contain mb-3 sm:mb-4"
             />
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#EAF3FF] border border-[#BFD8FF] text-[#2578FB] text-[10px] sm:text-xs font-bold uppercase tracking-wider mb-2 sm:mb-3 shadow-xs">
-              <Sparkles className="w-3 h-3 text-[#2578FB] animate-pulse" />
+
               Consultation Booking
             </div>
             <h1 className="font-extrabold text-xl sm:text-3xl md:text-4xl text-[#111827] tracking-tight font-sans">
@@ -1046,7 +1046,7 @@ export const BookingPage = () => {
                       {/* Mobile Number (10 Digit Numeric Validation) */}
                       <div>
                         <label className="block text-xs font-semibold text-[#111827] mb-1">
-                          Mobile Number <span className="text-red-500">*</span> (10 Digits)
+                          Mobile Number <span className="text-red-500">*</span>
                         </label>
                         <div className="relative">
                           <Phone className="w-4 h-4 text-[#5B6472] absolute left-3 top-3" />
@@ -1055,7 +1055,7 @@ export const BookingPage = () => {
                             inputMode="numeric"
                             maxLength={10}
                             required
-                            placeholder="10-digit mobile number"
+                            placeholder="Enter your mobile number"
                             value={customerMobile}
                             onChange={(e) => {
                               const digitsOnly = e.target.value
@@ -1078,7 +1078,7 @@ export const BookingPage = () => {
                           <input
                             type="email"
                             required
-                            placeholder="name@company.com"
+                            placeholder="your@domain.com"
                             value={customerEmail}
                             onChange={(e) => setCustomerEmail(e.target.value)}
                             className="w-full pl-9 pr-3.5 py-2.5 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] text-sm text-[#111827] focus:outline-none focus:border-[#2578FB] focus:ring-2 focus:ring-[#2578FB]/15 font-medium"

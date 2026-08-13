@@ -184,26 +184,20 @@ export const ConfirmationPage = () => {
               alt="HiveRift Logo"
               className="h-11 w-auto object-contain mb-4"
             />
-            <div className="w-16 h-16 rounded-2xl bg-[#EAF3FF] text-[#2578FB] border border-[#BFD8FF] flex items-center justify-center mb-4 shadow-blue">
-              {isPending ? (
-                <Hourglass className="w-8 h-8 animate-pulse" />
-              ) : (
-                <CheckCircle2 className="w-8 h-8" />
-              )}
+            <div className="w-16 h-16 rounded-2xl bg-emerald-50 text-emerald-600 border border-emerald-200 flex items-center justify-center mb-4 shadow-xs">
+              <CheckCircle2 className="w-9 h-9" />
             </div>
 
-            <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-xs font-extrabold uppercase tracking-wider mb-2 bg-[#EAF3FF] text-[#2578FB] border border-[#BFD8FF] shadow-xs">
-              <Sparkles className="w-3.5 h-3.5 text-[#2578FB]" />
-              {isPending ? 'Request Pending Approval' : 'Booking Confirmed'}
+            <span className="inline-flex items-center px-4 py-1.5 rounded-full text-xs font-extrabold uppercase tracking-wider mb-2 bg-emerald-50 text-emerald-700 border border-emerald-200 shadow-xs">
+              Appointment Scheduled Successfully
             </span>
 
             <h1 className="text-2xl sm:text-3xl font-extrabold text-[#111827] tracking-tight font-sans">
               HiveRift – Consultation Booking
             </h1>
             <p className="text-xs sm:text-sm text-[#5B6472] mt-1 max-w-md font-medium leading-relaxed">
-              {isPending
-                ? `Your 30-minute consultation request has been received. A notification has been sent to ${appointment.customerEmail}.`
-                : `Your 30-minute consultation is confirmed! Confirmation details sent to ${appointment.customerEmail}.`}
+              Your 30-minute consultation has been scheduled successfully! Confirmation details and meeting link have been sent to{' '}
+              <strong className="text-[#111827]">{appointment.customerEmail}</strong>.
             </p>
           </div>
 
@@ -294,16 +288,16 @@ export const ConfirmationPage = () => {
             </div>
 
             {/* Meeting Link for Confirmed Bookings */}
-            {!isPending && appointment.meetingLink && (
+            {appointment.meetingLink && (
               <div className="pt-3 border-t border-[#E2E8F0] mt-3">
                 <a
                   href={appointment.meetingLink}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-full flex items-center justify-center gap-2 py-2.5 px-4 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 rounded-xl font-bold text-xs border border-emerald-200 transition-colors"
+                  className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 rounded-xl font-extrabold text-xs sm:text-sm border border-emerald-200 shadow-2xs transition-colors"
                 >
                   <ExternalLink className="w-4 h-4" />
-                  Join Meeting Call
+                  <span>Join Google Meet Call</span>
                 </a>
               </div>
             )}
