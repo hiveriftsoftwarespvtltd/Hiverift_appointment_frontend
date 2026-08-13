@@ -17,24 +17,55 @@ import {
   ChevronRight,
   Building,
   Globe,
+  CheckCircle2,
+  Check,
 } from 'lucide-react';
 import api from '../../services/api';
+
+// Helper: Get Today's date in Eastern Time (America/New_York) YYYY-MM-DD
+const getTodayInET = () => {
+  const now = new Date();
+  const formatter = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'America/New_York',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  });
+  const parts = formatter.formatToParts(now);
+  const partMap = {};
+  for (const p of parts) {
+    partMap[p.type] = p.value;
+  }
+  return `${partMap.year}-${partMap.month}-${partMap.day}`;
+};
 
 export const AdminAppointments = () => {
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [autoRefresh, setAutoRefresh] = useState(true);
+
+  // Tabs: UPCOMING | PAST | ALL
+  const [activeTab, setActiveTab] = useState('UPCOMING');
 
   const [statusFilter, setStatusFilter] = useState('');
   const [dateFilter, setDateFilter] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedApp, setSelectedApp] = useState(null);
 
-  // Pagination state (3 entries per page)
+  // Pagination state (4 entries per page)
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 3;
+  const itemsPerPage = 4;
 
-  const fetchAppointments = () => {
-    setLoading(true);
+  const todayInET = getTodayInET();
+
+  const fetchAppointments = (isBackground = false) => {
+    if (!isBackground) {
+      setLoading(true);
+    } else {
+      setIsRefreshing(true);
+    }
+
     let url = '/admin/appointments?';
     if (statusFilter) url += `status=${statusFilter}&`;
     if (dateFilter) url += `date=${dateFilter}&`;
@@ -47,22 +78,35 @@ export const AdminAppointments = () => {
       .catch((err) => {
         console.error('Error fetching appointments', err);
       })
-      .finally(() => setLoading(false));
+      .finally(() => {
+        setLoading(false);
+        setIsRefreshing(false);
+      });
   };
 
+  // Fetch on filters change
   useEffect(() => {
-    fetchAppointments();
+    fetchAppointments(false);
   }, [statusFilter, dateFilter]);
 
-  // Reset to page 1 whenever search or filters change
+  // Live Auto-Refresh polling (every 15 seconds)
+  useEffect(() => {
+    if (!autoRefresh) return;
+    const interval = setInterval(() => {
+      fetchAppointments(true);
+    }, 15000);
+    return () => clearInterval(interval);
+  }, [autoRefresh, statusFilter, dateFilter]);
+
+  // Reset to page 1 whenever tab, search or filters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchQuery, statusFilter, dateFilter]);
+  }, [activeTab, searchQuery, statusFilter, dateFilter]);
 
   const handleStatusChange = async (id, newStatus) => {
     try {
       await api.patch(`/admin/appointments/${id}/status`, { status: newStatus });
-      fetchAppointments();
+      fetchAppointments(true);
       if (selectedApp && selectedApp._id === id) {
         setSelectedApp({ ...selectedApp, status: newStatus });
       }
@@ -75,7 +119,7 @@ export const AdminAppointments = () => {
     if (!window.confirm('Are you sure you want to delete this appointment record?')) return;
     try {
       await api.delete(`/admin/appointments/${id}`);
-      fetchAppointments();
+      fetchAppointments(true);
       if (selectedApp && selectedApp._id === id) setSelectedApp(null);
     } catch (err) {
       alert('Failed to delete appointment.');
@@ -113,10 +157,40 @@ export const AdminAppointments = () => {
     }
   };
 
+  // Tab Counters
+  const upcomingCount = appointments.filter(
+    (a) => a.appointmentDate >= todayInET && a.status !== 'CANCELLED' && a.status !== 'COMPLETED',
+  ).length;
+
+  const pastCount = appointments.filter(
+    (a) =>
+      a.appointmentDate < todayInET ||
+      a.status === 'COMPLETED' ||
+      a.status === 'CANCELLED' ||
+      a.status === 'NO_SHOW',
+  ).length;
+
+  const totalCount = appointments.length;
+
+  // Filter Appointments by Active Tab & Search Query
   const filteredAppointments = appointments.filter((app) => {
+    // Tab filter
+    if (activeTab === 'UPCOMING') {
+      const isUpcomingDate = app.appointmentDate >= todayInET;
+      const isPendingOrConfirmed = app.status !== 'CANCELLED' && app.status !== 'COMPLETED';
+      if (!isUpcomingDate || !isPendingOrConfirmed) return false;
+    } else if (activeTab === 'PAST') {
+      const isPastDate = app.appointmentDate < todayInET;
+      const isFinishedStatus = ['COMPLETED', 'CANCELLED', 'NO_SHOW'].includes(app.status);
+      if (!isPastDate && !isFinishedStatus) return false;
+    }
+
+    // Search query filter
     if (!searchQuery) return true;
     const q = searchQuery.toLowerCase();
-    const name = (app.customerName || `${app.firstName || ''} ${app.lastName || ''}`).toLowerCase();
+    const name = (
+      app.customerName || `${app.firstName || ''} ${app.lastName || ''}`
+    ).toLowerCase();
     const email = (app.customerEmail || '').toLowerCase();
     const mobile = (app.customerMobile || '').toLowerCase();
     const business = (app.businessName || app.companyName || '').toLowerCase();
@@ -128,13 +202,37 @@ export const AdminAppointments = () => {
     );
   });
 
+  // Sort Filtered Appointments Chronologically
+  const sortedAppointments = [...filteredAppointments].sort((a, b) => {
+    if (activeTab === 'UPCOMING') {
+      // Earliest upcoming dates first
+      if (a.appointmentDate !== b.appointmentDate) {
+        return a.appointmentDate < b.appointmentDate ? -1 : 1;
+      }
+      return (a.startTime || '').localeCompare(b.startTime || '');
+    } else if (activeTab === 'PAST') {
+      // Most recent past dates first
+      if (a.appointmentDate !== b.appointmentDate) {
+        return a.appointmentDate > b.appointmentDate ? -1 : 1;
+      }
+      return (b.startTime || '').localeCompare(a.startTime || '');
+    } else {
+      // All: Earliest to latest
+      if (a.appointmentDate !== b.appointmentDate) {
+        return a.appointmentDate < b.appointmentDate ? -1 : 1;
+      }
+      return (a.startTime || '').localeCompare(b.startTime || '');
+    }
+  });
+
   // Pagination calculation
-  const totalItems = filteredAppointments.length;
+  const totalItems = sortedAppointments.length;
   const totalPages = Math.ceil(totalItems / itemsPerPage) || 1;
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = Math.min(startIndex + itemsPerPage, totalItems);
-  const currentAppointments = filteredAppointments.slice(startIndex, endIndex);
+  const currentAppointments = sortedAppointments.slice(startIndex, endIndex);
 
+  // Group paginated items by date
   const groupedAppointments = currentAppointments.reduce((groups, app) => {
     const dateKey = app.appointmentDate;
     if (!groups[dateKey]) groups[dateKey] = [];
@@ -142,31 +240,130 @@ export const AdminAppointments = () => {
     return groups;
   }, {});
 
-  const sortedDates = Object.keys(groupedAppointments).sort((a, b) => (a < b ? 1 : -1));
+  const sortedDates = Object.keys(groupedAppointments).sort((a, b) => {
+    if (activeTab === 'PAST') {
+      return a > b ? -1 : 1;
+    }
+    return a < b ? -1 : 1;
+  });
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5 sm:space-y-6">
 
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-[#E2E8F0] shadow-xs">
+      {/* Header with Live Auto-Refresh Status */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 sm:p-6 rounded-2xl border border-[#E2E8F0] shadow-xs">
         <div className="space-y-1">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#EAF3FF] border border-[#BFD8FF] text-[#2578FB] text-[11px] font-bold uppercase tracking-wider">
             <CalendarDays className="w-3.5 h-3.5" />
-            <span>Bookings Manager</span>
+            <span>Bookings Manager (ET)</span>
           </div>
-          <h1 className="text-2xl font-extrabold text-[#111827] font-sans tracking-tight">
-            Consultation Bookings (ET)
+          <h1 className="text-xl sm:text-2xl font-extrabold text-[#111827] font-sans tracking-tight">
+            Consultation Bookings
           </h1>
           <p className="text-xs text-[#5B6472] font-medium">
-            Manage all 30-minute consultation appointments scheduled in Eastern Time (ET).
+            Standardized in Eastern Time (ET) · Today: <span className="font-bold text-[#111827]">{todayInET}</span>
           </p>
         </div>
+
+        {/* Live Auto-Refresh Controls */}
+        <div className="flex items-center gap-2.5 self-start sm:self-auto">
+          <button
+            type="button"
+            onClick={() => setAutoRefresh(!autoRefresh)}
+            className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
+              autoRefresh
+                ? 'bg-emerald-50 text-emerald-700 border-emerald-200 shadow-2xs'
+                : 'bg-gray-50 text-gray-500 border-gray-200'
+            }`}
+            title="Toggle live 15s auto-refresh"
+          >
+            <span
+              className={`w-2 h-2 rounded-full ${
+                autoRefresh ? 'bg-emerald-500 animate-pulse' : 'bg-gray-400'
+              }`}
+            ></span>
+            <span>{autoRefresh ? 'Auto-Refresh: ON (15s)' : 'Auto-Refresh: OFF'}</span>
+          </button>
+
+          <button
+            onClick={() => fetchAppointments(false)}
+            disabled={loading || isRefreshing}
+            className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-[#2578FB] hover:bg-[#1257C7] text-white font-bold text-xs shadow-blue transition-all cursor-pointer disabled:opacity-50"
+          >
+            <RefreshCw
+              className={`w-3.5 h-3.5 ${isRefreshing || loading ? 'animate-spin' : ''}`}
+            />
+            <span>Refresh</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Modern Tabs Bar (Upcoming | Past | All) */}
+      <div className="flex flex-wrap items-center gap-2 bg-white p-1.5 rounded-2xl border border-[#E2E8F0] shadow-xs">
         <button
-          onClick={fetchAppointments}
-          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] text-[#5B6472] font-bold text-xs hover:bg-[#EAF3FF] hover:text-[#2578FB] hover:border-[#BFD8FF] transition-all self-start sm:self-auto cursor-pointer"
+          type="button"
+          onClick={() => setActiveTab('UPCOMING')}
+          className={`flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 rounded-xl font-bold text-xs transition-all cursor-pointer ${
+            activeTab === 'UPCOMING'
+              ? 'bg-[#2578FB] text-white shadow-blue font-extrabold'
+              : 'text-[#5B6472] hover:bg-[#F8FAFC] hover:text-[#111827]'
+          }`}
         >
-          <RefreshCw className="w-3.5 h-3.5" />
-          Refresh List
+          <Clock className="w-3.5 h-3.5" />
+          <span>Upcoming & Today</span>
+          <span
+            className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold ${
+              activeTab === 'UPCOMING'
+                ? 'bg-white/20 text-white'
+                : 'bg-[#EAF3FF] text-[#2578FB]'
+            }`}
+          >
+            {upcomingCount}
+          </span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab('PAST')}
+          className={`flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 rounded-xl font-bold text-xs transition-all cursor-pointer ${
+            activeTab === 'PAST'
+              ? 'bg-[#2578FB] text-white shadow-blue font-extrabold'
+              : 'text-[#5B6472] hover:bg-[#F8FAFC] hover:text-[#111827]'
+          }`}
+        >
+          <CheckCircle2 className="w-3.5 h-3.5" />
+          <span>Past & Completed</span>
+          <span
+            className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold ${
+              activeTab === 'PAST'
+                ? 'bg-white/20 text-white'
+                : 'bg-gray-100 text-gray-700'
+            }`}
+          >
+            {pastCount}
+          </span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab('ALL')}
+          className={`flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 rounded-xl font-bold text-xs transition-all cursor-pointer ${
+            activeTab === 'ALL'
+              ? 'bg-[#2578FB] text-white shadow-blue font-extrabold'
+              : 'text-[#5B6472] hover:bg-[#F8FAFC] hover:text-[#111827]'
+          }`}
+        >
+          <Calendar className="w-3.5 h-3.5" />
+          <span>All Bookings</span>
+          <span
+            className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold ${
+              activeTab === 'ALL'
+                ? 'bg-white/20 text-white'
+                : 'bg-gray-100 text-gray-700'
+            }`}
+          >
+            {totalCount}
+          </span>
         </button>
       </div>
 
@@ -236,21 +433,37 @@ export const AdminAppointments = () => {
                 className="bg-white border border-[#E2E8F0] rounded-2xl shadow-xs overflow-hidden"
               >
                 {/* DATE GROUP HEADER */}
-                <div className="bg-[#EAF3FF]/50 border-b border-[#BFD8FF]/50 px-5 py-3.5 flex items-center justify-between">
+                <div className="bg-[#EAF3FF]/50 border-b border-[#BFD8FF]/50 px-5 py-3.5 flex flex-wrap items-center justify-between gap-3">
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-xl bg-[#2578FB] text-white flex items-center justify-center shadow-blue">
+                    <div className="w-8 h-8 rounded-xl bg-[#2578FB] text-white flex items-center justify-center shadow-blue flex-shrink-0">
                       <CalendarDays className="w-4 h-4" />
                     </div>
                     <div>
-                      <span className="font-extrabold text-sm text-[#111827] font-sans block">
-                        {dayFull} (ET)
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <span className="font-extrabold text-sm text-[#111827] font-sans block">
+                          {dayFull} (ET)
+                        </span>
+                        {dateKey === todayInET ? (
+                          <span className="px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 border border-emerald-300 text-[10px] font-extrabold flex items-center gap-1">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse"></span>
+                            TODAY
+                          </span>
+                        ) : dateKey > todayInET ? (
+                          <span className="px-2 py-0.5 rounded-md bg-[#EAF3FF] text-[#2578FB] border border-[#BFD8FF] text-[10px] font-extrabold">
+                            UPCOMING
+                          </span>
+                        ) : (
+                          <span className="px-2 py-0.5 rounded-md bg-gray-100 text-gray-600 border border-gray-300 text-[10px] font-bold">
+                            PAST
+                          </span>
+                        )}
+                      </div>
                       <span className="text-[11px] font-bold text-[#2578FB] font-mono">
                         Date: {ddmmyyyy}
                       </span>
                     </div>
                   </div>
-                  <span className="text-xs font-bold text-[#2578FB] bg-white px-3.5 py-1.5 rounded-full border border-[#BFD8FF]">
+                  <span className="text-xs font-bold text-[#2578FB] bg-white px-3.5 py-1.5 rounded-full border border-[#BFD8FF] shadow-2xs">
                     {apps.length} {apps.length === 1 ? 'Consultation' : 'Consultations'}
                   </span>
                 </div>
