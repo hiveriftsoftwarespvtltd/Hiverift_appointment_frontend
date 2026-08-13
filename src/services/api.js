@@ -1,11 +1,12 @@
 import axios from 'axios';
 
-// Live Production API URL (Commented out)
-// const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://appointment.buxaa.in/appointment_api/api/v1';
-
-// Local Development API URL
+// Live Production API URL
 const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || 'http://localhost:5005/api/v1';
+  import.meta.env.VITE_API_BASE_URL ||
+  'https://appointment.buxaa.in/appointment_api/api/v1';
+
+// Local Development API URL (Commented out)
+// const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5005/api/v1';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
