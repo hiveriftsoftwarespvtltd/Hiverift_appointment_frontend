@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Video,
@@ -13,6 +13,7 @@ import {
   AlertCircle,
   ChevronRight,
   ChevronLeft,
+  ChevronDown,
   Shield,
   Sparkles,
   Check,
@@ -23,21 +24,21 @@ import bookingAppointmentImg from '../../assets/bookingappointment.png';
 import hiveriftLogo from '../../assets/LOGO.svg';
 import api from '../../services/api';
 
-// Popular Timezone Options with clean labels for mobile & desktop
+// Popular Timezone Options with clean labels and country flag codes
 const TIMEZONE_OPTIONS = [
-  { value: 'Asia/Kolkata', label: '🇮🇳 India (IST, UTC+5:30)' },
-  { value: 'America/New_York', label: '🇺🇸 US Eastern (ET, UTC-5)' },
-  { value: 'America/Chicago', label: '🇺🇸 US Central (CT, UTC-6)' },
-  { value: 'America/Denver', label: '🇺🇸 US Mountain (MT, UTC-7)' },
-  { value: 'America/Los_Angeles', label: '🇺🇸 US Pacific (PT, UTC-8)' },
-  { value: 'Europe/London', label: '🇬🇧 UK London (GMT/BST)' },
-  { value: 'Europe/Paris', label: '🇪🇺 Europe Paris/Berlin (CET)' },
-  { value: 'Asia/Dubai', label: '🇦🇪 Dubai (GST, UTC+4)' },
-  { value: 'Asia/Singapore', label: '🇸🇬 Singapore (SGT, UTC+8)' },
-  { value: 'Australia/Sydney', label: '🇦🇺 Sydney (AEST, UTC+10)' },
-  { value: 'Asia/Tokyo', label: '🇯🇵 Tokyo (JST, UTC+9)' },
-  { value: 'America/Toronto', label: '🇨🇦 Toronto (ET, UTC-5)' },
-  { value: 'America/Vancouver', label: '🇨🇦 Vancouver (PT, UTC-8)' },
+  { value: 'Asia/Kolkata', label: 'India (IST, UTC+5:30)', flagCode: 'in' },
+  { value: 'America/New_York', label: 'US Eastern (ET, UTC-5)', flagCode: 'us' },
+  { value: 'America/Chicago', label: 'US Central (CT, UTC-6)', flagCode: 'us' },
+  { value: 'America/Denver', label: 'US Mountain (MT, UTC-7)', flagCode: 'us' },
+  { value: 'America/Los_Angeles', label: 'US Pacific (PT, UTC-8)', flagCode: 'us' },
+  { value: 'Europe/London', label: 'UK London (GMT/BST)', flagCode: 'gb' },
+  { value: 'Europe/Paris', label: 'Europe Paris/Berlin (CET)', flagCode: 'eu' },
+  { value: 'Asia/Dubai', label: 'Dubai (GST, UTC+4)', flagCode: 'ae' },
+  { value: 'Asia/Singapore', label: 'Singapore (SGT, UTC+8)', flagCode: 'sg' },
+  { value: 'Australia/Sydney', label: 'Sydney (AEST, UTC+10)', flagCode: 'au' },
+  { value: 'Asia/Tokyo', label: 'Tokyo (JST, UTC+9)', flagCode: 'jp' },
+  { value: 'America/Toronto', label: 'Toronto (ET, UTC-5)', flagCode: 'ca' },
+  { value: 'America/Vancouver', label: 'Vancouver (PT, UTC-8)', flagCode: 'ca' },
 ];
 
 // Helper: Get Today's date in Eastern Time (America/New_York) YYYY-MM-DD
@@ -134,6 +135,29 @@ export const BookingPage = () => {
       return 'Asia/Kolkata';
     }
   });
+
+  // Timezone Dropdown Open state and Ref
+  const [isTzDropdownOpen, setIsTzDropdownOpen] = useState(false);
+  const tzDropdownRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (tzDropdownRef.current && !tzDropdownRef.current.contains(e.target)) {
+        setIsTzDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const currentTzOpt = TIMEZONE_OPTIONS.find((t) => t.value === clientTimezone) || {
+    value: clientTimezone,
+    label: clientTimezone.replace('_', ' '),
+    flagCode:
+      clientTimezone === 'Asia/Calcutta' || clientTimezone === 'Asia/Kolkata'
+        ? 'in'
+        : 'us',
+  };
 
   // Today in ET
   const todayInET = getTodayInET();
@@ -637,30 +661,76 @@ export const BookingPage = () => {
                         </div>
                       </div>
 
-                      {/* Timezone Selector - Clean and Mobile-Overflow Proof */}
-                      <div className="flex items-center gap-2 bg-white px-2.5 py-1.5 rounded-xl border border-[#BFD8FF] shadow-xs w-full sm:w-auto min-w-0">
-                        <Globe className="w-3.5 h-3.5 text-[#2578FB] flex-shrink-0" />
-                        <div className="flex flex-col text-left min-w-0 flex-1">
-                          <label className="text-[8px] sm:text-[9px] font-extrabold text-[#5B6472] uppercase tracking-wider">
-                            Your Timezone
-                          </label>
-                          <select
-                            value={clientTimezone}
-                            onChange={(e) => setClientTimezone(e.target.value)}
-                            className="text-xs font-bold text-[#111827] bg-transparent focus:outline-none cursor-pointer w-full truncate pr-1"
-                          >
-                            {!TIMEZONE_OPTIONS.some((t) => t.value === clientTimezone) && (
-                              <option value={clientTimezone}>
-                                🌐 {clientTimezone}
-                              </option>
-                            )}
-                            {TIMEZONE_OPTIONS.map((opt) => (
-                              <option key={opt.value} value={opt.value}>
-                                {opt.label}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
+                      {/* Timezone Selector - Custom Dropdown with Real Country Flag Icons */}
+                      <div className="relative w-full sm:w-auto" ref={tzDropdownRef}>
+                        <button
+                          type="button"
+                          onClick={() => setIsTzDropdownOpen(!isTzDropdownOpen)}
+                          className="flex items-center justify-between gap-2.5 bg-white hover:bg-slate-50 px-3 py-1.5 rounded-xl border border-[#BFD8FF] shadow-xs w-full sm:w-64 md:w-72 min-w-0 transition-all text-left cursor-pointer"
+                        >
+                          <div className="flex items-center gap-2 min-w-0 flex-1">
+                            <img
+                              src={`https://flagcdn.com/w40/${currentTzOpt.flagCode || 'un'}.png`}
+                              alt="Flag"
+                              className="w-4.5 h-3 object-cover rounded-xs shadow-2xs flex-shrink-0"
+                              onError={(e) => {
+                                e.target.style.display = 'none';
+                              }}
+                            />
+                            <div className="flex flex-col min-w-0 flex-1">
+                              <span className="text-[8px] font-extrabold text-[#5B6472] uppercase tracking-wider leading-none mb-0.5">
+                                Your Timezone
+                              </span>
+                              <span className="text-xs font-bold text-[#111827] truncate">
+                                {currentTzOpt.label}
+                              </span>
+                            </div>
+                          </div>
+                          <ChevronDown
+                            className={`w-3.5 h-3.5 text-[#5B6472] flex-shrink-0 transition-transform duration-200 ${
+                              isTzDropdownOpen ? 'rotate-180 text-[#2578FB]' : ''
+                            }`}
+                          />
+                        </button>
+
+                        {/* Dropdown Floating Menu with Actual Country Flags */}
+                        {isTzDropdownOpen && (
+                          <div className="absolute right-0 top-full mt-1.5 w-full sm:w-80 bg-white rounded-2xl shadow-xl border border-[#E2E8F0] p-1.5 z-50 max-h-64 overflow-y-auto animate-fadeIn divide-y divide-slate-100">
+                            {TIMEZONE_OPTIONS.map((opt) => {
+                              const isSelected = clientTimezone === opt.value;
+                              return (
+                                <button
+                                  key={opt.value}
+                                  type="button"
+                                  onClick={() => {
+                                    setClientTimezone(opt.value);
+                                    setIsTzDropdownOpen(false);
+                                  }}
+                                  className={`w-full flex items-center justify-between gap-2.5 px-3 py-2 rounded-xl text-left transition-all text-xs font-bold cursor-pointer ${
+                                    isSelected
+                                      ? 'bg-[#EAF3FF] text-[#2578FB]'
+                                      : 'hover:bg-slate-50 text-[#111827]'
+                                  }`}
+                                >
+                                  <div className="flex items-center gap-2.5 min-w-0">
+                                    <img
+                                      src={`https://flagcdn.com/w40/${opt.flagCode}.png`}
+                                      alt={opt.flagCode}
+                                      className="w-5 h-3.5 object-cover rounded-xs shadow-2xs flex-shrink-0"
+                                      onError={(e) => {
+                                        e.target.style.display = 'none';
+                                      }}
+                                    />
+                                    <span className="truncate">{opt.label}</span>
+                                  </div>
+                                  {isSelected && (
+                                    <Check className="w-3.5 h-3.5 text-[#2578FB] flex-shrink-0 stroke-[3]" />
+                                  )}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
