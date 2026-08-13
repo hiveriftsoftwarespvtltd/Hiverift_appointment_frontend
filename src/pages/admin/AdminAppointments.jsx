@@ -265,30 +265,12 @@ export const AdminAppointments = () => {
           </p>
         </div>
 
-        {/* Live Auto-Refresh Controls */}
+        {/* Controls */}
         <div className="flex items-center gap-2.5 self-start sm:self-auto">
-          <button
-            type="button"
-            onClick={() => setAutoRefresh(!autoRefresh)}
-            className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
-              autoRefresh
-                ? 'bg-emerald-50 text-emerald-700 border-emerald-200 shadow-2xs'
-                : 'bg-gray-50 text-gray-500 border-gray-200'
-            }`}
-            title="Toggle live 15s auto-refresh"
-          >
-            <span
-              className={`w-2 h-2 rounded-full ${
-                autoRefresh ? 'bg-emerald-500 animate-pulse' : 'bg-gray-400'
-              }`}
-            ></span>
-            <span>{autoRefresh ? 'Auto-Refresh: ON (15s)' : 'Auto-Refresh: OFF'}</span>
-          </button>
-
           <button
             onClick={() => fetchAppointments(false)}
             disabled={loading || isRefreshing}
-            className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-[#2578FB] hover:bg-[#1257C7] text-white font-bold text-xs shadow-blue transition-all cursor-pointer disabled:opacity-50"
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#2578FB] hover:bg-[#1257C7] text-white font-bold text-xs shadow-blue transition-all cursor-pointer disabled:opacity-50"
           >
             <RefreshCw
               className={`w-3.5 h-3.5 ${isRefreshing || loading ? 'animate-spin' : ''}`}
